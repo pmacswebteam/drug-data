@@ -11,14 +11,15 @@ d3.csv(heatmap_file).then(function(data) {
         // organize the information about the drug into one property 
         //to make it easier to segregate from the data on the cells
         d.info = {
-            'pathway_sort' : [d['sort number']],
-            'cmpd' : [d.cmpd_name, d.cmpd_number],
-            'primary_target' : [d['Primary Target']],
-            'pathway' : [d.Pathway],
+            'pathway_sort' : d['sort number'],
+            'cmpd_name' : d.cmpd_name,
+            'cmpd_number' :  d.cmpd_number,
+            'primary_target' : d['Primary Target'],
+            'pathway' : d.Pathway,
         };
         
         // delete the original info from the row so that 
-        //we can control it's display separately
+        //we can control its display separately
         delete d.cmpd_number;
         delete d.cmpd_name;
         delete d['sort number'];
@@ -86,35 +87,28 @@ d3.csv(heatmap_file).then(function(data) {
     var cells = rows
         .selectAll("td")
         .data(function (d) {
+            //console.log(getRowValues(d));
             return getRowValues(d);
         })
         .enter()
         .append("td")
         .attr("data-sort-value", function(d) {
-            //console.log(d);
-            if (d[1]) {
-                return d[1];
-            }
+            return d.sort;
         })
         .attr("data-cell_line", function (d) {
-            if (d[3]) {
-                return d[3];
-            }
+            return d.cell_line;
         })
         .attr("data-cmpd", function (d) {
-            if (d[4]) {
-                return d[4];
-            }
+            return d.cmpd_name;
+            
         })
         .attr("data-cmpd_number", function (d) {
-            if (d[2]) {
-                return d[2];
-            }
+            return  d.cmpd_number;
         })
         .attr("data-ic50", function (d) {
-            if (d[0] && !isNaN(d[0])) {
-                return d[0];
-            }
+            if (!isNaN(d.ic50)) {
+                return d.ic50;
+            } 
         })
         .on("click", function () {
             showGraph(this);
@@ -122,22 +116,18 @@ d3.csv(heatmap_file).then(function(data) {
         .attr("class", function (d) {
             // add a class so that the colored cells can be styled 
             //differently than the rest of the table
-            if (d.length > 1) {
-                return "heatmap__cell--" + typeof d[0];
-            }
+            if (!isNaN(d.ic50)) {
+                return "heatmap__cell--" + typeof d.ic50;
+            } 
         })
         .style("background-color", function (d, i) {
-            if (d.length > 1) {
-                return color(d[0]);
-            }
+            if (!isNaN(d.ic50)) {
+                return color(d.ic50);
+            } 
         })
         .append("span")
         .text(function (d) {
-            if (Array.isArray(d)) {
-                return d[0];
-            } else {
-                return d;
-            }
+            return d.value;
             
         });
         
@@ -158,7 +148,13 @@ d3.csv(heatmap_file).then(function(data) {
 });
 
 function getRowValues(d) {
-    var values = [d.info.pathway_sort, d.info.pathway, d.info.primary_target, d.info.cmpd];
+    var values = [
+        {'value': d.info.pathway_sort, 'sort': null},
+        {'value': d.info.pathway, 'sort': null},
+        {'value': d.info.primary_target, 'sort': null},
+        {'value': d.info.cmpd_name, 'sort': d.info.cmpd_number}
+    ];
+        
     return values.concat(getObjValuesAsArray_compounds(d));
 }
 
@@ -170,7 +166,15 @@ function getObjValuesAsArray_compounds (o) {
         if (typeof o[k] !== 'object') {
             // create an array for each cell
             // value, sort value, cell line, compound name
-            var cell = [o[k], null, o.info.cmpd[1], k, o.info.cmpd[0]];
+            //var cell = [o[k], null, o.info.cmpd[1], k, o.info.cmpd[0]];
+            var cell = {
+                'value' : o[k],
+                'sort' : null,
+                'cell_line' : k,
+                'cmpd_name' : o.info.cmpd_name,
+                'cmpd_number' : o.info.cmpd_number,
+                'ic50' : o[k]
+            }
             arr.push(cell);
         } 
     });
@@ -237,8 +241,6 @@ function drawGraph (cell_line, compound_number, ic50/*, HillSlope*/) {
         // const fmt = d3.format("." + p + "r");
         const fmt = d3.format(".3f");
         let HillSlope=0;
-
-        console.log(original_data);
 
         original_data.forEach(function(d) {
             Object.keys(d).forEach(function(k) {
