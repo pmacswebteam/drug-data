@@ -2,6 +2,9 @@ const $heatmap_container = $('#heatmap');
 const heatmap_directory = $heatmap_container.data('heatmapDir');
 const heatmap_file = heatmap_directory + 'main.csv';
 
+let compounds = [];
+let cell_lines = []
+
 d3.csv(heatmap_file).then(function(data) {
 
     data.forEach(function(d) {
@@ -17,6 +20,8 @@ d3.csv(heatmap_file).then(function(data) {
             'primary_target' : d['Primary Target'],
             'pathway' : d.Pathway,
         };
+
+        compounds.push({'name' : d.cmpd_name, 'number' : d.cmpd_number});
         
         // delete the original info from the row so that 
         //we can control its display separately
@@ -31,6 +36,7 @@ d3.csv(heatmap_file).then(function(data) {
     
     var header = table.append("thead").append("tr");
     var tableHeaders = Object.keys(data[0]);
+    cell_lines = Object.keys(data[0]);
     var sortTypes = [];
     
     for (var i = 0; i < tableHeaders.length; i++) {
@@ -45,8 +51,8 @@ d3.csv(heatmap_file).then(function(data) {
     
     // add in table headers do display drug info
     // "yes" for Pathway Sort is for marking it as the default sort column
-    tableHeaders.unshift(["Pathway Sort", "yes"], "Pathway", "Target", "Compound Name");
-    sortTypes.unshift('float', 'string', 'string', 'string');
+    tableHeaders.unshift('Show', ["Pathway Sort", "yes"], "Pathway", "Target", "Compound Name");
+    sortTypes.unshift(null, 'float', 'string', 'string', 'string');
     
     header
         .selectAll("th")
@@ -76,7 +82,7 @@ d3.csv(heatmap_file).then(function(data) {
         .enter()
         .append("tr")
         .attr("class", function(d) {
-            return d.info.row_class;
+            return 'compound-' + d.info.cmpd_number;
         })
         
     var color = d3.scaleLinear()
@@ -129,7 +135,19 @@ d3.csv(heatmap_file).then(function(data) {
         .text(function (d) {
             return d.value;
             
-        });
+        })
+        .filter(function(d) {
+            return d.toggle_input;
+        }).append("input")
+            .attr("type", "checkbox")
+            .attr("data-cmpd_number", function(d) {
+                return d.toggle_input;
+            })
+            .attr("class", "in-place-toggle")
+            .attr("checked", true)
+            .on("change", function () {
+                toggle_compound_visibility(this);
+            });
         
     // add data-sort to the table headers and use the stupid table plugin to enable sorting
     d3.select("#heatmap")
@@ -149,6 +167,7 @@ d3.csv(heatmap_file).then(function(data) {
 
 function getRowValues(d) {
     var values = [
+        {'toggle_input' : d.info.cmpd_number},
         {'value': d.info.pathway_sort, 'sort': null},
         {'value': d.info.pathway, 'sort': null},
         {'value': d.info.primary_target, 'sort': null},
@@ -406,6 +425,17 @@ function drawGraph (cell_line, compound_number, ic50/*, HillSlope*/) {
 function dose_response_curve(concentration, top, bottom, LogIC50, HillSlope) {
     return bottom + (top - bottom)/
         (1 + Math.pow(10, ((LogIC50-concentration)*HillSlope)));
+}
+
+function toggle_compound_visibility(checkbox) {
+    $checkbox = $(checkbox);
+    $row = $checkbox.parents('tr');
+
+    if (checkbox.checked) {
+        $row.removeClass('row-hide');
+    } else {
+        $row.addClass('row-hide');
+    }
 }
 
 //drawGraph('ST8814','Refametinib (RDEA119, Bay 86-9766)',0.2624, 1.136)
