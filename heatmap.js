@@ -48,7 +48,7 @@ d3.csv(heatmap_file).then(function(data) {
     // add in table headers do display drug info
     // "yes" for Pathway Sort is for marking it as the default sort column
     tableHeaders.unshift(["Pathway Sort", "yes"], "Pathway", "Target", "Compound Name", "NCI Link");
-    sortTypes.unshift('float', 'string', 'string', 'string', '');
+    sortTypes.unshift('float', 'string', 'string', 'string', null);
     
     header
         .selectAll("th")
