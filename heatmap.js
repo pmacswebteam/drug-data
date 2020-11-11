@@ -241,6 +241,11 @@ function drawGraph (cell_line, compound_number, ic50/*, HillSlope*/) {
         // const fmt = d3.format("." + p + "r");
         const fmt = d3.format(".3f");
         let HillSlope=0;
+        let bottom=0;
+        let top=0;
+        let xmid=0;
+        let scal=0;
+        let s=0;
 
         original_data.forEach(function(d) {
             Object.keys(d).forEach(function(k) {
@@ -250,9 +255,30 @@ function drawGraph (cell_line, compound_number, ic50/*, HillSlope*/) {
                 if (typeof d[k] !== 'object' && d['Row Labels'] == 'HillSlope') {
                     HillSlope = +d[k];
                     return;
-                }
+                } 
+                //wendy modification
                 if (typeof d[k] !== 'object' && d['Row Labels'] == 'Name') {
                     compound = d[k];
+                    return;
+                }
+                if (typeof d[k] !== 'object' && d['Row Labels'] == 'bottom') {
+                    bottom = +d[k];
+                    return;
+                }
+                if (typeof d[k] !== 'object' && d['Row Labels'] == 'top') {
+                    top = +d[k];
+                    return;
+                }
+                if (typeof d[k] !== 'object' && d['Row Labels'] == 'xmid') {
+                    xmid = +d[k];
+                    return;
+                }
+                if (typeof d[k] !== 'object' && d['Row Labels'] == 'scal') {
+                    scal = +d[k];
+                    return;
+                }
+                if (typeof d[k] !== 'object' && d['Row Labels'] == 's') {
+                    s = +d[k];
                     return;
                 }
                 if (typeof d[k] !== 'object') {
@@ -285,20 +311,29 @@ function drawGraph (cell_line, compound_number, ic50/*, HillSlope*/) {
         let max_inhibitions = d3.max(dataset, function(d) { return d.inhibition;} );
         let min_inhibitions = d3.min(dataset, function(d) { return d.inhibition;} );
 
-        // Add dose_response_curve
+        // Add dose_response_curve 
+        
+        //original
         LogIC50 = Math.log10(+ic50);
+        //dataset.forEach(function(d){
+        //    if (isNaN(LogIC50) || isNaN(HillSlope)) {
+        //        d.dose_response_curve = false;
+        //    } else {
+        //        d.dose_response_curve = dose_response_curve(
+        //            d.dose,
+        //            100,
+        //            0,
+        //            LogIC50,
+        //            HillSlope
+        //        );
+        //    }
+        //});
+        
+        //wendy modification
         dataset.forEach(function(d){
-            if (isNaN(LogIC50) || isNaN(HillSlope)) {
-                d.dose_response_curve = false;
-            } else {
                 d.dose_response_curve = dose_response_curve(
-                    d.dose,
-                    100,
-                    0,
-                    LogIC50,
-                    HillSlope
+                    d.dose, top, bottom, xmid, scal, s
                 );
-            }
         });
 
         //console.log(dataset);
@@ -398,14 +433,22 @@ function drawGraph (cell_line, compound_number, ic50/*, HillSlope*/) {
             .attr("x", margin.left)
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text("Data not found.");
+            .text("Data Error." + error);
 
     });
 }
 
-function dose_response_curve(concentration, top, bottom, LogIC50, HillSlope) {
-    return bottom + (top - bottom)/
-        (1 + Math.pow(10, ((LogIC50-concentration)*HillSlope)));
+//function dose_response_curve(concentration, top, bottom, LogIC50, HillSlope) {
+//    return bottom + (top - bottom)/
+//        (1 + Math.pow(10, ((LogIC50-concentration)*HillSlope)));
+//}
+
+function dose_response_curve(concentration, top, bottom, xmid, scal, s) {
+    top = top * 100
+    bottom = bottom * 100
+    return bottom+(top-bottom)/Math.pow(1+Math.pow(10, ((xmid-concentration)*scal)),s);    
 }
+
+//yfit <- bottom+(top-bottom)/(1+10^((xmid-X)*scal))^s
 
 //drawGraph('ST8814','Refametinib (RDEA119, Bay 86-9766)',0.2624, 1.136)
