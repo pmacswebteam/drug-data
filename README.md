@@ -33,3 +33,5 @@ main.csv is used to build the heatmap table.
 
 Each cell line has a file with the dose response data. These files are used to draw the does response curves you see when clicking a cell in the heatmap.
 
+## The plot function 
+It is modified to take the 5 parameters estimates from R nplr library (https://github.com/fredcommo/nplr).
