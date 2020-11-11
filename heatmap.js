@@ -1,6 +1,7 @@
 const $heatmap_container = $('#heatmap');
 const heatmap_directory = $heatmap_container.data('heatmapDir');
 const heatmap_file = heatmap_directory + 'main.csv';
+const URL_nci = 'https://cancer.gov/publications/dictionaries/cancer-drug/def/';
 
 d3.csv(heatmap_file).then(function(data) {
 
@@ -16,6 +17,7 @@ d3.csv(heatmap_file).then(function(data) {
             'cmpd_number' :  d.cmpd_number,
             'primary_target' : d['Primary Target'],
             'pathway' : d.Pathway,
+            'URL_nci' : URL_nci + d.cmpd_name
         };
         
         // delete the original info from the row so that 
@@ -45,8 +47,8 @@ d3.csv(heatmap_file).then(function(data) {
     
     // add in table headers do display drug info
     // "yes" for Pathway Sort is for marking it as the default sort column
-    tableHeaders.unshift(["Pathway Sort", "yes"], "Pathway", "Target", "Compound Name");
-    sortTypes.unshift('float', 'string', 'string', 'string');
+    tableHeaders.unshift(["Pathway Sort", "yes"], "Pathway", "Target", "Compound Name", "NCI Link");
+    sortTypes.unshift('float', 'string', 'string', 'string', '');
     
     header
         .selectAll("th")
@@ -126,7 +128,11 @@ d3.csv(heatmap_file).then(function(data) {
             } 
         })
         .append("span")
-        .text(function (d) {
+        .html(function (d) {
+            console.log(d);
+            if (d.link) {
+                return '<a href="' + d.link + '"">' + d.value + '</a>';
+            }
             return d.value;
             
         });
@@ -152,7 +158,8 @@ function getRowValues(d) {
         {'value': d.info.pathway_sort, 'sort': null},
         {'value': d.info.pathway, 'sort': null},
         {'value': d.info.primary_target, 'sort': null},
-        {'value': d.info.cmpd_name, 'sort': d.info.cmpd_number}
+        {'value': d.info.cmpd_name, 'sort': d.info.cmpd_number},
+        {'value': 'link', 'link': d.info.URL_nci, 'sort':null}
     ];
         
     return values.concat(getObjValuesAsArray_compounds(d));
