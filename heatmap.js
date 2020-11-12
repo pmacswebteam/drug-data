@@ -4,6 +4,10 @@ const heatmap_file = heatmap_directory + 'main.csv';
 const URL_nci = 'https://cancer.gov/publications/dictionaries/cancer-drug/def/';
 const URL_pchem = 'https://pubchem.ncbi.nlm.nih.gov/compound/';
 
+function make_class_name(strng){
+    return strng.replace(/[^a-zA-Z0-9 -]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-'); // collapse dashes
+}
+
 d3.csv(heatmap_file).then(function(data) {
     var select_pathway = document.getElementById("pathwaySel");
     var select_target = document.getElementById("targetSel");
@@ -28,15 +32,13 @@ d3.csv(heatmap_file).then(function(data) {
             'pathway' : d.Pathway,
             'URL_nci' : URL_nci + d.cmpd_name,
             'URL_pchem': URL_pchem + d.cmpd_name,
-            'row_class' : make_class_name(d.cmpd_name)
+            'row_class' : make_class_name(d.cmpd_name)+" "+make_class_name(d['Primary Target'])+" "+make_class_name(d.Pathway)
+
 
         };
 
         //make class for each attribute: pathway, cmpnd, and target so you can manipulate here.
         //make class each
-
-
-
 
         if (!(pathways.includes(d.Pathway))) {
             select_pathway.options[select_pathway.options.length] = new Option(d.Pathway, d.Pathway);
@@ -110,8 +112,10 @@ d3.csv(heatmap_file).then(function(data) {
         .enter()
         .append("tr")
         .attr("class", function(d) {
-            return d.info.row_class;
+            return d.info.row_class
         })
+
+
 
     var color = d3.scaleLinear()
         .domain([0, 25])
@@ -186,10 +190,6 @@ d3.csv(heatmap_file).then(function(data) {
 
 });
 
-function make_class_name(strng){
-    return strng.replace(/[^a-zA-Z0-9 -]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-'); // collapse dashes
-}
-
 // arguments: reference to select list, callback function (optional)
 function getSelectedOptions(sel, fn) {
     var opts = [], opt;
@@ -223,7 +223,23 @@ document.getElementById("pathwaySel").onchange = function(e) {
     var display = document.getElementById('display');
     display.innerHTML = ''; // reset
 
-    getSelectedOptions(this, callback);
+    // callback fn handles selected options
+    var selected_opts = getSelectedOptions(this, callback);
+
+    var classes = []
+    for (var i = 0;i < selected_opts.length;i++){
+        classes.push(make_class_name(selected_opts[i].innerHTML))
+    }
+    // console.log(classes)
+    $('#heatmap tbody tr').each(function( index ) {
+        // console.log( index + ": " + $( this ).text() );
+        $(this).hide();
+        for (var i = 0;i < classes.length;i++) {
+            if ($(this).hasClass(classes[i])){
+                $(this).show()
+            }
+        }
+    });
 
 
     // remove ', ' at end of string
@@ -268,7 +284,22 @@ document.getElementById("targetSel").onchange = function(e) {
     display.innerHTML = ''; // reset
 
     // callback fn handles selected options
-    getSelectedOptions(this, callback1);
+    var selected_opts = getSelectedOptions(this, callback1);
+
+    var classes = []
+    for (var i = 0;i < selected_opts.length;i++){
+        classes.push(make_class_name(selected_opts[i].innerHTML))
+    }
+    // console.log(classes)
+    $('#heatmap tbody tr').each(function( index ) {
+        // console.log( index + ": " + $( this ).text() );
+        $(this).hide();
+        for (var i = 0;i < classes.length;i++) {
+            if ($(this).hasClass(classes[i])){
+                $(this).show()
+            }
+        }
+    });
 
     // remove ', ' at end of string
     var str = display.innerHTML.slice(0, -2);
@@ -312,6 +343,7 @@ document.getElementById("compoundSel").onchange = function(e) {
     for (var i = 0;i < selected_opts.length;i++){
         classes.push(make_class_name(selected_opts[i].innerHTML))
     }
+    console.log(classes)
     $('#heatmap tbody tr').each(function( index ) {
         // console.log( index + ": " + $( this ).text() );
         $(this).hide();
