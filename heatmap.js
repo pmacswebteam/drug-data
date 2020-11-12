@@ -1,7 +1,7 @@
 const $heatmap_container = $('#heatmap');
 const heatmap_directory = $heatmap_container.data('heatmapDir');
 const heatmap_file = heatmap_directory + 'main.csv';
-const URL_nci = 'https://cancer.gov/publications/dictionaries/cancer-drug/def/';
+// const URL_nci = 'https://cancer.gov/publications/dictionaries/cancer-drug/def/';
 const URL_pchem = 'https://pubchem.ncbi.nlm.nih.gov/compound/';
 
 function make_class_name(strng){
@@ -30,7 +30,7 @@ d3.csv(heatmap_file).then(function(data) {
             'cmpd_number' :  d.cmpd_number,
             'primary_target' : d['Primary Target'],
             'pathway' : d.Pathway,
-            'URL_nci' : URL_nci + d.cmpd_name,
+            // 'URL_nci' : URL_nci + d.cmpd_name,
             'URL_pchem': URL_pchem + d.cmpd_name,
             'row_class' : make_class_name(d.cmpd_name)+" "+make_class_name(d['Primary Target'])+" "+make_class_name(d.Pathway)
 
@@ -81,8 +81,8 @@ d3.csv(heatmap_file).then(function(data) {
 
     // add in table headers do display drug info
     // "yes" for Pathway Sort is for marking it as the default sort column
-    tableHeaders.unshift(["Pathway Sort", "yes"], "Pathway", "Target", "Compound Name", "NCI Link", "PubChem link");
-    sortTypes.unshift('float', 'string', 'string', 'string', '','');
+    tableHeaders.unshift(["Pathway Sort", "yes"], "Pathway", "Target", "Compound Name","PubChem Link");
+    sortTypes.unshift('float', 'string', 'string', 'string', '');
 
     header
         .selectAll("th")
@@ -393,7 +393,7 @@ function getRowValues(d) {
         {'value': d.info.pathway, 'sort': null},
         {'value': d.info.primary_target, 'sort': null},
         {'value': d.info.cmpd_name, 'sort': d.info.cmpd_number},
-        {'value': 'link', 'link': d.info.URL_nci, 'sort':null},
+        // {'value': 'link', 'link': d.info.URL_nci, 'sort':null},
         {'value': 'link', 'link': d.info.URL_pchem, 'sort':null},
 
     ];
