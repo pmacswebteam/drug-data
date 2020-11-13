@@ -248,7 +248,13 @@ document.getElementById("pathwaySel").onchange = function(e) {
     display.innerHTML = str;
 };
 
-document.getElementById('demoForm').onsubmit = function(e) {
+document.getElementById('clear_button').onclick = function(e) {
+    
+    location.reload();
+
+};
+
+/*document.getElementById('demoForm').onsubmit = function(e) {
     // reference to select list using this keyword and form elements collection
     // no callback function used this time
 
@@ -262,7 +268,7 @@ document.getElementById('demoForm').onsubmit = function(e) {
     alert('The number of options selected is: ' + opts.length);  //  number of selected options
 
     return false; // don't return online form
-};
+};*/
 
 function callback(opt) {
     // display in textarea for this example
