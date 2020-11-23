@@ -652,7 +652,7 @@ function drawGraph (cell_line, compound_number, ic50/*, HillSlope*/) {
 
 
         // Append the path, bind the data, and call the line generator
-        if (HillSlope && !isNaN(HillSlope)) {
+        if (!isNaN(HillSlope)) {
             svg.append("path")
                 .datum(dataset) // 10. Binds data to the line
                 .attr("class", "line") // Assign a class for styling
