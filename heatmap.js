@@ -17,6 +17,13 @@ d3.csv(heatmap_file).then(function(data) {
     var targets = [];
     var compound_names = [];
 
+    var low_color = '#12bab8';
+    var high_color = '#e63f3b';
+
+    var color = d3.scaleLinear()
+        .domain([0, 25])
+        .range([low_color, high_color])
+        .interpolate(d3.interpolateHcl);
 
     data.forEach(function(d) {
 
@@ -64,6 +71,44 @@ d3.csv(heatmap_file).then(function(data) {
     });
 
     var table = d3.select("#heatmap").append("table");
+
+    var caption = table.append("caption")
+        .attr("class", "heatmap-caption");
+
+    var caption_label = caption.append("p").text("IC50");
+
+    var svg = caption.append("svg")
+        .attr("width", 300)
+        .attr("height", 70);
+
+
+    //Append a defs (for definition) element to your SVG
+    var defs = svg.append("defs");
+
+    //Append a linearGradient element to the defs and give it a unique id
+    var linearGradient = defs.append("linearGradient")
+        .attr("id", "linear-gradient");
+
+    for (var i = 0; i <= 25; i++) {
+        linearGradient.append("stop")
+            .attr("offset", i/25)
+            .attr("stop-color", color(i));
+    }
+
+    svg.append("rect")
+        .attr("width", 300)
+        .attr("height", 20)
+        .style("fill", "url(#linear-gradient)");
+
+    svg.append("text")
+        .attr("y", 35)
+        .attr("x", 0)
+        .text("0");
+
+    svg.append("text")
+        .attr("y", 35)
+        .attr("x", 280)
+        .text("25");
 
     var header = table.append("thead").append("tr");
     var tableHeaders = Object.keys(data[0]);
@@ -114,13 +159,6 @@ d3.csv(heatmap_file).then(function(data) {
         .attr("class", function(d) {
             return d.info.row_class
         })
-
-
-
-    var color = d3.scaleLinear()
-        .domain([0, 25])
-        .range(["#12bab8","#e63f3b"])
-        .interpolate(d3.interpolateHcl);
 
     var cells = rows
         .selectAll("td")

@@ -130,3 +130,10 @@
         fill: none;
         stroke: steelblue;
         }
+
+        .heatmap-caption {
+            width: 300px;
+            margin-left: auto;
+            margin-right: 20px;
+        }
+        
