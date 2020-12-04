@@ -12,7 +12,7 @@
         }
 
         #heatmap {
-            overflow: scroll;
+            overflow: auto;
         }
 
         #heatmap table {
@@ -130,3 +130,10 @@
         fill: none;
         stroke: steelblue;
         }
+
+        .heatmap-caption {
+            width: 340px;
+            margin-left: auto;
+            margin-right: 0;
+        }
+        

@@ -17,6 +17,13 @@ d3.csv(heatmap_file).then(function(data) {
     var targets = [];
     var compound_names = [];
 
+    var low_color = '#12bab8';
+    var high_color = '#e63f3b';
+
+    var color = d3.scaleLinear()
+        .domain([0, 25])
+        .range([low_color, high_color])
+        .interpolate(d3.interpolateHcl);
 
     data.forEach(function(d) {
 
@@ -64,6 +71,63 @@ d3.csv(heatmap_file).then(function(data) {
     });
 
     var table = d3.select("#heatmap").append("table");
+
+    var caption = table.append("caption")
+        .attr("class", "heatmap-caption");
+
+    const caption_width = 340;
+    const scale_x_margin = 20;
+    const scale_width = caption_width - scale_x_margin * 2;
+    const scale_height = 20;
+    const scale_min = 0;
+    const scale_max = 25;
+
+    var caption_label = caption.append("p").text("IC50μM");
+
+    var svg = caption.append("svg")
+        .attr("width", caption_width)
+        .attr("height", 70);
+
+    //Append a defs (for definition) element to your SVG
+    var defs = svg.append("defs");
+
+    //Append a linearGradient element to the defs and give it a unique id
+    var linearGradient = defs.append("linearGradient")
+        .attr("id", "linear-gradient");
+
+    for (var i = scale_min; i <= scale_max; i++) {
+        linearGradient.append("stop")
+            .attr("offset", i / scale_max)
+            .attr("stop-color", color(i));
+    }
+
+    svg.append("rect")
+        .attr("width", scale_width)
+        .attr("height", scale_height)
+        .attr("x", scale_x_margin)
+        .style("fill", "url(#linear-gradient)");
+
+
+    for (let i = 5; i <= 25; i += 5) {
+
+        const position = scale_x_margin + i / scale_max * scale_width - 1;
+        const dash = scale_height / 3 + ", " + scale_height / 3;
+
+        svg.append("text")
+            .style("text-anchor", "middle")
+            .attr("y", 35)
+            .attr("x", position)
+            .text(i);
+
+        svg.append("line")
+            .style("stroke", "rgba(0, 0, 0, .5)")
+            .style("stroke-width", 1)
+            .style("stroke-dasharray", (dash))
+            .attr("x1", position)
+            .attr("y1", 0)
+            .attr("x2", position)
+            .attr("y2", scale_height);
+    }
 
     var header = table.append("thead").append("tr");
     var tableHeaders = Object.keys(data[0]);
@@ -114,13 +178,6 @@ d3.csv(heatmap_file).then(function(data) {
         .attr("class", function(d) {
             return d.info.row_class
         })
-
-
-
-    var color = d3.scaleLinear()
-        .domain([0, 25])
-        .range(["#12bab8","#e63f3b"])
-        .interpolate(d3.interpolateHcl);
 
     var cells = rows
         .selectAll("td")
