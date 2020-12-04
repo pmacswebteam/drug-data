@@ -75,12 +75,18 @@ d3.csv(heatmap_file).then(function(data) {
     var caption = table.append("caption")
         .attr("class", "heatmap-caption");
 
-    var caption_label = caption.append("p").text("IC50");
+    const caption_width = 340;
+    const scale_x_margin = 20;
+    const scale_width = caption_width - scale_x_margin * 2;
+    const scale_height = 20;
+    const scale_min = 0;
+    const scale_max = 25;
+
+    var caption_label = caption.append("p").text("IC50μM");
 
     var svg = caption.append("svg")
-        .attr("width", 300)
+        .attr("width", caption_width)
         .attr("height", 70);
-
 
     //Append a defs (for definition) element to your SVG
     var defs = svg.append("defs");
@@ -89,26 +95,39 @@ d3.csv(heatmap_file).then(function(data) {
     var linearGradient = defs.append("linearGradient")
         .attr("id", "linear-gradient");
 
-    for (var i = 0; i <= 25; i++) {
+    for (var i = scale_min; i <= scale_max; i++) {
         linearGradient.append("stop")
-            .attr("offset", i/25)
+            .attr("offset", i / scale_max)
             .attr("stop-color", color(i));
     }
 
     svg.append("rect")
-        .attr("width", 300)
-        .attr("height", 20)
+        .attr("width", scale_width)
+        .attr("height", scale_height)
+        .attr("x", scale_x_margin)
         .style("fill", "url(#linear-gradient)");
 
-    svg.append("text")
-        .attr("y", 35)
-        .attr("x", 0)
-        .text("0");
 
-    svg.append("text")
-        .attr("y", 35)
-        .attr("x", 280)
-        .text("25");
+    for (let i = 5; i <= 25; i += 5) {
+
+        const position = scale_x_margin + i / scale_max * scale_width - 1;
+        const dash = scale_height / 3 + ", " + scale_height / 3;
+
+        svg.append("text")
+            .style("text-anchor", "middle")
+            .attr("y", 35)
+            .attr("x", position)
+            .text(i);
+
+        svg.append("line")
+            .style("stroke", "rgba(0, 0, 0, .5)")
+            .style("stroke-width", 1)
+            .style("stroke-dasharray", (dash))
+            .attr("x1", position)
+            .attr("y1", 0)
+            .attr("x2", position)
+            .attr("y2", scale_height);
+    }
 
     var header = table.append("thead").append("tr");
     var tableHeaders = Object.keys(data[0]);
